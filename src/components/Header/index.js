@@ -1,9 +1,17 @@
 import React from 'react'
 import './styles.css';
 
-function Header() {
+function Header () {
+  
+  function logout(){
+    alert('logout')
+  }
+
   return (
-    <div className='navbar'>Header</div>
+    <div className='navbar'>
+      <p className='logo'>FinTrack.</p>
+      <p className='logo link' onClick={logout}>LogOut</p>
+    </div>
   )
 }
 
