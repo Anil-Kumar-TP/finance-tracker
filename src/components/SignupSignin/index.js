@@ -3,8 +3,8 @@ import './styles.css';
 import Input from '../Input';
 import Button from '../Button';
 import { toast } from 'react-toastify';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-import { auth, db } from '../../firebase';
+import { GoogleAuthProvider, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { auth, db, provider } from '../../firebase';
 import { useNavigate } from 'react-router-dom';
 import { setDoc,doc, getDoc } from 'firebase/firestore';
 
@@ -105,6 +105,33 @@ function SignupSignin () {
     };
   };
 
+  function googleAuth () {
+    setLoading(true);
+    try {
+      signInWithPopup(auth, provider)
+      .then((result) => {
+        const credential = GoogleAuthProvider.credentialFromResult(result);
+        const token = credential.accessToken;
+        const user = result.user;
+        console.log("User", user);
+        createDoc(user);
+        setLoading(false);
+        navigate('/dashboard')
+        toast.success("User Authenticated");
+        
+    }).catch((error) => {
+    setLoading(false);
+    const errorCode = error.code;
+    const errorMessage = error.message;
+    toast.error(errorMessage)
+  });
+    } catch (e) {
+      setLoading(false);
+      toast.error(e.message)
+    }
+  };
+
+
   return (
     <>
       {loginForm ?
@@ -116,7 +143,7 @@ function SignupSignin () {
               <Input type='password' label='Password' state={password} setState={setPassword} placeholder='johndoe123' t />
               <Button text={loading ? "Loading..." : 'Login using Email and Password'} onClick={loginUsingEmail} disabled={loading} />
               <p className='p-login'>or</p>
-              <Button text={loading ? "Loading..." : 'Login using Google'} blue={true} />
+              <Button onClick={googleAuth} text={loading ? "Loading..." : 'Login using Google'} blue={true} />
                <p className='p-login' onClick={()=>setLoginForm(!loginForm)}>or Don't Have an account ? Click Here</p>
             </form>
           </div>
@@ -131,7 +158,7 @@ function SignupSignin () {
             <Input type='password' label='Confirm Password' state={confirmPassword} setState={setConfirmPassword} placeholder='johndoe123' />
             <Button text={loading ? "Loading..." : 'SignUp using Email and Password'} onClick={signupWithEmail} disabled={loading} />
             <p className='p-login'>or</p>
-            <Button text={loading ? "Loading..." : 'SignUp using Google'} blue={true} />
+            <Button onClick={googleAuth} text={loading ? "Loading..." : 'SignUp using Google'} blue={true} />
              <p className='p-login' onClick={()=>setLoginForm(!loginForm)}> Have an account already ? Click Here</p>
           </form>
         </div>}
